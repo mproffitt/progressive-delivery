@@ -1,9 +1,9 @@
 {
-  "name": "@weaveworks/progressive-delivery",
+  "name": "@mproffitt/progressive-delivery",
   "version": "0.0.0-rc13",
   "main": "api/prog/prog.pb.js",
   "types": "api/prog/prog.pb.d.ts",
-  "author": "",
+  "author": "weaveworks",
   "scripts": {
     "compile": "npx tsc"
   },

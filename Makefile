@@ -12,7 +12,7 @@ lint:
 	$(CURRENT_DIR)/tools/go-lint
 
 tools: ## Install Go tools
-	go install $(shell go list -f '{{join .Imports " "}}' tools/tools.go)
+	cat $(CURRENT_DIR)/tools/tools.go | awk -F'"' '/_/{print $$2}' | xargs -tI % go install %
 
 dependencies: tools ## Install build dependencies
 	$(CURRENT_DIR)/tools/download-deps.sh $(CURRENT_DIR)/tools/dependencies.toml
@@ -39,7 +39,7 @@ ui/lib/dist/package.json: ui/lib/package.json
 js-lib: ui/lib/dist/index.js ui/lib/dist/package.json
 
 publish-js-lib: js-lib
-	cd ui/lib/dist && npm publish
+	cd ui/lib/dist && npm publish --access=public
 
 clean:
 	rm -rf ui/lib/dist

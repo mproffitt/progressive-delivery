@@ -37,12 +37,12 @@ check_url() {
 
 instantiate_url() {
     test $# == 1 || exit
-    local url="${1}"
-    url=${url//\$\{arch\}/$(arch)}
-    url=${url//\$\{goarch\}/$(goarch)}
-    url=${url//\$\{goos\}/$RELEASE_GOOS}
-    url=${url//\$\{os\}/$RELEASE_OS}
-    url=${url//\$\{version\}/$(run_stoml version)}
+    export arch=$(arch)
+    export goarch=$(go env GOARCH)
+    export goos=${RELEASE_GOOS}
+    export os=${RELEASE_OS}
+    export version=$(echo $(run_stoml version) | awk '{print $NF}')
+    local url="$(envsubst <<<$1)"
     # hack for tilt because of https://github.com/tilt-dev/tilt/issues/5434
     if [[ "${url}" = *"tilt"* ]] && [[ "${url}" = *"darwin"* ]]; then
       url="${url/darwin/mac}"
@@ -75,8 +75,11 @@ download_dependency() {
     tarpath=$(instantiate_url "$(run_stoml tarpath)")
 
     local special_tarpath
-    special_tarpath=$(instantiate_url "$(run_stoml special_tarpath)")
+    local stp
+    stp="$(run_stoml special_tarpath)"
+    special_tarpath=$(instantiate_url "${stp}")
 
+    echo "TARPATH : ${special_tarpath}"
     local special_tarpath_url
     # shellcheck disable=SC2206
     special_tarpath_url=(${special_tarpath//;/ }) # split out special paths which contain <url>;<path in tarball>
@@ -105,7 +108,7 @@ download_dependency() {
     if check_url "${binarypath}"; then
         url_and_path="${binarypath}"
         fetch=do_curl_binary
-    elif check_url "${special_tarpath_url}"; then
+    elif check_url "${special_tarpath_url[0]}"; then
         url_and_path="${special_tarpath}"
         fetch=do_curl_tarball_with_path
     elif check_url "${tarpath}"; then
